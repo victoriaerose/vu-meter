@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Dalton/Robin Spectrum Meter</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Permanent+Marker&family=Share+Tech+Mono&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #08080c;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+
+        /* Custom Character Typography */
+        .font-knox { font-family: 'Permanent Marker', cursive; }
+        .font-robin { font-family: 'MedievalSharp', cursive; }
+        .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
+
+        /* Chassis and Wood Panel Styling */
+        .rack-chassis {
+            background: linear-gradient(180deg, #232330 0%, #111118 100%);
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2), 0 30px 60px rgba(0,0,0,0.95);
+            border: 1px solid #333348;
+        }
+
+        .wood-panel {
+            background: linear-gradient(90deg, #2e1208 0%, #4a1d0f 50%, #2e1208 100%);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9), 3px 0 12px rgba(0,0,0,0.7);
+        }
+
+        .vu-face {
+            background: radial-gradient(circle at 50% 90%, #fff7ed 0%, #fef08a 45%, #f59e0b 80%, #b45309 100%);
+            box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.65), inset 0 0 12px rgba(120, 80, 20, 0.6);
+        }
+
+        /* Stuck in the Middle Glitch Vibration */
+        .vu-stuck-glitch {
+            animation: stuck-shake 0.08s infinite alternate ease-in-out;
+        }
+
+        @keyframes stuck-shake {
+            0% { transform: translate(0px, 0px) rotate(0deg); }
+            50% { transform: translate(-1.5px, 1px) rotate(-0.5deg); }
+            100% { transform: translate(1.5px, -1px) rotate(0.5deg); }
+        }
+
+        /* Vacuum Tube Glow Animations */
+        .tube-glow-left {
+            background: radial-gradient(circle at 50% 30%, rgba(239, 68, 68, 0.95) 0%, rgba(185, 28, 28, 0.4) 55%, transparent 80%);
+            animation: pulse-left 1.5s infinite alternate ease-in-out;
+        }
+
+        .tube-glow-right {
+            background: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.95) 0%, rgba(4, 120, 87, 0.4) 55%, transparent 80%);
+            animation: pulse-right 1.8s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse-left { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+        @keyframes pulse-right { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        /* Glass Reflection Effect */
+        .glass-glare {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 35%, transparent 35%, transparent 100%);
+            pointer-events: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0c0c12; }
+        ::-webkit-scrollbar-thumb { background: #333348; border-radius: 3px; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-200 flex flex-col items-center justify-center p-2 sm:p-4 md:p-6">
+
+    <!-- MAIN RACK CONTAINER -->
+    <div class="w-full max-w-6xl rack-chassis rounded-2xl overflow-hidden relative border-2 border-slate-700 flex flex-col shadow-2xl">
+        
+        <!-- HEADER BAR -->
+        <div class="bg-slate-900/95 px-4 sm:px-6 py-3 border-b border-slate-700/80 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="flex space-x-1.5">
+                    <div class="w-3.5 h-3.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.9)]"></div>
+                    <div class="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.9)]"></div>
+                    <div class="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]"></div>
+                </div>
+                <h1 class="text-base sm:text-xl font-black tracking-wider text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-gauge-high text-amber-500"></i>
+                    THE DALTON/ROBIN SPECTRUM METER
+                    <span class="text-[10px] sm:text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono-tech border border-amber-500/30">CALIBRATED v6.0</span>
+                </h1>
+            </div>
+
+            <!-- VACUUM TUBES -->
+            <div class="flex items-center space-x-4 sm:space-x-6 text-xs text-slate-400 font-mono-tech">
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-7 rounded-t-full border border-red-500/50 bg-slate-950 relative overflow-hidden flex items-center justify-center">
+                        <div class="w-2.5 h-4 tube-glow-left rounded-full"></div>
+                    </div>
+                    <span class="hidden sm:inline text-red-400 font-bold">DALTON! (BLUES/ROCK)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-7 rounded-t-full border border-emerald-500/50 bg-slate-950 relative overflow-hidden flex items-center justify-center">
+                        <div class="w-2.5 h-4 tube-glow-right rounded-full"></div>
+                    </div>
+                    <span class="hidden sm:inline text-emerald-400 font-bold">SIR ROBIN (FOLK)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- METER & CARDS STAGE -->
+        <div class="flex flex-col lg:flex-row w-full relative">
+            
+            <!-- LEFT WOOD SIDE PANEL -->
+            <div class="hidden lg:block w-7 wood-panel border-r border-amber-950/80 shrink-0"></div>
+
+            <!-- CENTER WORKSPACE -->
+            <div class="flex-1 p-3 sm:p-5 bg-slate-950/80 flex flex-col items-center justify-between gap-4 relative overflow-hidden">
+                
+                <!-- BACKGROUND AMBIENT GLOWS -->
+                <div id="leftBgGlow" class="absolute inset-y-0 left-0 w-1/2 bg-red-600/10 blur-3xl pointer-events-none transition-opacity duration-300 opacity-20"></div>
+                <div id="rightBgGlow" class="absolute inset-y-0 right-0 w-1/2 bg-emerald-600/10 blur-3xl pointer-events-none transition-opacity duration-300 opacity-20"></div>
+
+                <!-- 3 COLUMNS: DALTON CARD | VU METER | SIR ROBIN CARD -->
+                <div class="w-full grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                    
+                    <!-- LEFT CARD: DALTON! (3 COLS) -->
+                    <div id="knoxCard" class="md:col-span-3 bg-gradient-to-b from-red-950/60 via-slate-900/90 to-slate-950/95 border-2 border-red-900/50 rounded-xl p-3 text-center transition-all duration-300 shadow-xl relative overflow-hidden flex flex-col items-center">
+                        
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-red-600 text-slate-100 text-[11px] font-black tracking-widest rounded-full uppercase shadow-md whitespace-nowrap z-10">
+                            "DALTON!"
+                        </div>
+                        
+                        <!-- PHOTO AVATAR FRAME (DALTON) -->
+                        <div id="daltonDropZone" 
+                             class="w-28 h-28 sm:w-32 sm:h-32 my-3 rounded-xl border-2 border-red-500/60 overflow-hidden relative shadow-[0_0_20px_rgba(239,68,68,0.4)] bg-slate-950 flex items-center justify-center cursor-pointer group transition-transform hover:scale-105"
+                             onclick="document.getElementById('daltonFileInput').click()"
+                             ondragover="handleDragOver(event)"
+                             ondragleave="handleDragLeave(event, 'daltonDropZone')"
+                             ondrop="handleFileDrop(event, 'dalton')">
+                            
+                            <!-- 
+                                EASY PHOTO REPLACEMENT CODE:
+                                You can replace the src below with your own photo file URL/path!
+                                Example: src="my_dalton_photo.jpg"
+                            -->
+                            <img id="dalton-photo" 
+                                 src="" 
+                                 alt="Dalton Avatar" 
+                                 class="w-full h-full object-cover hidden">
+
+                            <!-- DEFAULT FALLBACK SVG AVATAR (Shown if no custom photo uploaded) -->
+                            <div id="daltonSvgFallback" class="w-full h-full">
+                                <svg class="w-full h-full" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="200" height="200" fill="#180505"/>
+                                    <circle cx="100" cy="90" r="75" fill="#450a0a" opacity="0.8"/>
+                                    <path d="M 30 200 L 70 140 L 100 170 L 130 140 L 170 200 Z" fill="#991b1b"/>
+                                    <path d="M 45 200 L 75 150 L 100 180 L 125 150 L 155 200 Z" fill="#b91c1c"/>
+                                    <path d="M 65 75 Q 65 125 100 130 Q 135 125 135 75 Q 135 45 100 45 Q 65 45 65 75 Z" fill="#f87171" stroke="#450a0a" stroke-width="3"/>
+                                    <path d="M 64 80 Q 55 135 100 145 Q 145 135 136 80 Q 120 130 100 132 Q 80 130 64 80 Z" fill="#450a0a"/>
+                                    <ellipse cx="100" cy="102" rx="14" ry="10" fill="#000000"/>
+                                    <path d="M 90 96 L 110 96" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                                    <path d="M 72 65 L 92 72" stroke="#450a0a" stroke-width="5" stroke-linecap="round"/>
+                                    <path d="M 128 65 L 108 72" stroke="#450a0a" stroke-width="5" stroke-linecap="round"/>
+                                    <circle cx="82" cy="76" r="4" fill="#ffffff"/><circle cx="83" cy="76" r="2" fill="#000"/>
+                                    <circle cx="118" cy="76" r="4" fill="#ffffff"/><circle cx="117" cy="76" r="2" fill="#000"/>
+                                    <rect x="30" y="10" width="140" height="26" rx="6" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+                                    <text x="100" y="27" font-family="'Permanent Marker', cursive" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle">"DALTON!"</text>
+                                </svg>
+                            </div>
+
+                            <!-- HOVER OVERLAY FOR DRAG/DROP -->
+                            <div class="absolute inset-0 bg-red-950/80 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[10px] text-red-200 font-mono-tech transition-opacity p-1">
+                                <i class="fa-solid fa-cloud-arrow-up text-lg text-red-400 mb-1"></i>
+                                <span>CLICK / DROP PHOTO</span>
+                            </div>
+                        </div>
+
+                        <!-- HIDDEN FILE INPUT FOR DALTON PHOTO -->
+                        <input type="file" id="daltonFileInput" accept="image/*" class="hidden" onchange="handleImageSelect(event, 'dalton')">
+
+                        <h2 class="text-xl font-knox text-red-500 tracking-wide leading-none">"DALTON!"</h2>
+                        <p class="text-[10px] text-red-300 font-bold uppercase tracking-wider mt-0.5">Extreme Brawl / Blues Rock</p>
+                        
+                        <div class="mt-2 w-full space-y-1">
+                            <div class="flex justify-between text-[10px] font-mono-tech text-red-300/80">
+                                <span>BRAWL INTENSITY:</span>
+                                <span id="brawlMeterVal" class="font-bold text-red-400">100%</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-red-900/50">
+                                <div id="brawlMeterBar" class="h-full bg-red-600 transition-all duration-300 w-full"></div>
+                            </div>
+                        </div>
+
+                        <div id="knoxQuoteBox" class="mt-2 text-[10.5px] bg-red-950/80 border border-red-800/60 text-red-200 p-2 rounded-lg font-mono-tech leading-tight italic min-h-[42px] flex items-center justify-center w-full">
+                            "DALTON! I'VE GOT A TIP FOR YA!"
+                        </div>
+                    </div>
+
+                    <!-- CENTER ANALOG VU METER GAUGE (6 COLS) -->
+                    <div class="md:col-span-6 flex flex-col items-center">
+                        <div id="vuMeterHousing" class="w-full max-w-xl aspect-[1.8/1] vu-face rounded-t-full rounded-b-2xl border-4 border-slate-800 relative overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.95)] flex flex-col items-center justify-end p-4 transition-transform duration-100">
+                            
+                            <!-- GLARE OVERLAY -->
+                            <div class="absolute inset-0 glass-glare z-20"></div>
+
+                            <!-- DIAL SCALES & TICKS -->
+                            <svg class="absolute inset-0 w-full h-full p-2 z-0" viewBox="0 0 300 170">
+                                <path d="M 25 145 A 125 125 0 0 1 275 145" fill="none" stroke="#45381d" stroke-width="3" stroke-dasharray="2,3"/>
+                                
+                                <!-- Dial Arc Segments (-90° to +90°) -->
+                                <path d="M 28 145 A 122 122 0 0 1 105 45" fill="none" stroke="#dc2626" stroke-width="10" stroke-linecap="round"/>
+                                <path d="M 115 40 A 122 122 0 0 1 185 40" fill="none" stroke="#0284c7" stroke-width="10"/>
+                                <path d="M 195 45 A 122 122 0 0 1 272 145" fill="none" stroke="#059669" stroke-width="10" stroke-linecap="round"/>
+
+                                <!-- Scale Marks -->
+                                <g stroke="#261e0e" stroke-width="2">
+                                    <line x1="28" y1="145" x2="40" y2="140"/>
+                                    <line x1="55" y1="95" x2="66" y2="95"/>
+                                    <line x1="105" y1="55" x2="112" y2="64"/>
+                                    <line x1="150" y1="38" x2="150" y2="50" stroke="#0284c7" stroke-width="3"/> 
+                                    <line x1="195" y1="55" x2="188" y2="64"/>
+                                    <line x1="245" y1="95" x2="234" y2="95"/>
+                                    <line x1="272" y1="145" x2="260" y2="140"/>
+                                </g>
+
+                                <!-- Text Annotations -->
+                                <text x="32" y="125" font-family="Permanent Marker" font-size="11" fill="#991b1b" font-weight="bold">"DALTON!"</text>
+                                <text x="18" y="138" font-family="Share Tech Mono" font-size="8" fill="#7f1d1d">ROADHOUSE BLUES</text>
+                                
+                                <text x="110" y="24" font-family="Share Tech Mono" font-size="8.5" fill="#0284c7" font-weight="bold">STUCK IN MIDDLE</text>
+                                <text x="115" y="33" font-family="Share Tech Mono" font-size="7.5" fill="#0369a1">(ZEPPELIN / RADIOHEAD)</text>
+
+                                <text x="200" y="125" font-family="MedievalSharp" font-size="11" fill="#065f46" font-weight="bold">SIR ROBIN</text>
+                                <text x="205" y="138" font-family="Share Tech Mono" font-size="8" fill="#064e3b">FAIRPORT / GREENSLEEVES</text>
+                            </svg>
+
+                            <!-- STUCK IN MIDDLE BANNER -->
+                            <div id="stuckGlitchBanner" class="absolute top-8 text-center hidden z-10 font-mono-tech text-[10px] sm:text-xs text-slate-950 font-black bg-cyan-300 px-3 py-1 rounded border-2 border-slate-900 shadow-lg animate-pulse">
+                                ⚡ NEEDLE PARALYZED / STUCK IN THE MIDDLE! ⚡
+                            </div>
+
+                            <!-- NEEDLE ASSEMBLY -->
+                            <div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none z-10 flex justify-center items-end">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-b from-slate-600 via-slate-800 to-slate-950 border-2 border-slate-400 shadow-2xl z-20 flex items-center justify-center">
+                                    <div id="pivotDot" class="w-4 h-4 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)] transition-colors duration-200"></div>
+                                </div>
+                                <div id="vuNeedle" class="absolute bottom-5 w-1 h-[138px] bg-red-600 origin-bottom transform rotate-0 transition-transform ease-out duration-75 shadow-[3px_3px_10px_rgba(0,0,0,0.8)] rounded-t-full">
+                                    <div class="w-2.5 h-8 bg-slate-900 mx-auto -mt-1 rounded-t-sm border-x border-slate-700"></div>
+                                </div>
+                            </div>
+
+                            <div class="z-0 mb-0.5 text-[9px] font-mono-tech font-bold tracking-widest text-amber-950/90 uppercase">
+                                ANALOG SPECTRUM SPECTRUM METER
+                            </div>
+                        </div>
+
+                        <!-- LIVE STATUS TICKER -->
+                        <div class="w-full mt-3 bg-slate-900 border border-slate-700 rounded-lg p-2.5 flex items-center space-x-3 shadow-inner">
+                            <div id="tickerStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0"></div>
+                            <div id="tickerText" class="text-xs sm:text-sm font-mono-tech text-amber-400 truncate w-full">
+                                Select a calibrated preset or search a song below!
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT CARD: SIR ROBIN (3 COLS) -->
+                    <div id="robinCard" class="md:col-span-3 bg-gradient-to-b from-emerald-950/60 via-slate-900/90 to-slate-950/95 border-2 border-emerald-900/50 rounded-xl p-3 text-center transition-all duration-300 shadow-xl relative overflow-hidden flex flex-col items-center">
+                        
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-emerald-600 text-slate-100 text-[11px] font-black tracking-widest rounded-full uppercase shadow-md whitespace-nowrap z-10">
+                            Sir Robin
+                        </div>
+
+                        <!-- PHOTO AVATAR FRAME (SIR ROBIN) -->
+                        <div id="robinDropZone" 
+                             class="w-28 h-28 sm:w-32 sm:h-32 my-3 rounded-xl border-2 border-emerald-500/60 overflow-hidden relative shadow-[0_0_20px_rgba(16,185,129,0.4)] bg-slate-950 flex items-center justify-center cursor-pointer group transition-transform hover:scale-105"
+                             onclick="document.getElementById('robinFileInput').click()"
+                             ondragover="handleDragOver(event)"
+                             ondragleave="handleDragLeave(event, 'robinDropZone')"
+                             ondrop="handleFileDrop(event, 'robin')">
+                            
+                            <!-- 
+                                EASY PHOTO REPLACEMENT CODE:
+                                You can replace the src below with your own photo file URL/path!
+                                Example: src="my_robin_photo.jpg"
+                            -->
+                            <img id="robin-photo" 
+                                 src="" 
+                                 alt="Sir Robin Avatar" 
+                                 class="w-full h-full object-cover hidden">
+
+                            <!-- DEFAULT FALLBACK SVG AVATAR -->
+                            <div id="robinSvgFallback" class="w-full h-full">
+                                <svg class="w-full h-full" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="200" height="200" fill="#022c22"/>
+                                    <circle cx="100" cy="100" r="80" fill="#064e3b" opacity="0.6"/>
+                                    <path d="M 100 25 Q 120 10 135 25 Q 120 40 105 32 Z" fill="#dc2626"/>
+                                    <path d="M 90 30 C 90 10 145 10 145 55 L 85 55 Z" fill="#94a3b8" stroke="#334155" stroke-width="2"/>
+                                    <rect x="100" y="42" width="30" height="6" rx="2" fill="#0f172a"/>
+                                    <path d="M 85 55 L 155 55 L 165 170 L 75 170 Z" fill="#f8fafc"/>
+                                    <path d="M 25 75 Q 15 45 35 40 Q 55 55 50 80 Z" fill="#eab308"/>
+                                    <path d="M 50 80 Q 55 45 75 45 Q 75 65 65 85 Z" fill="#10b981"/>
+                                    <circle cx="50" cy="85" r="18" fill="#fde047" stroke="#854d0e" stroke-width="2"/>
+                                    <circle cx="45" cy="92" r="5" fill="#713f12"/>
+                                    <ellipse cx="55" cy="135" rx="20" ry="26" fill="#b45309" transform="rotate(-25 55 135)"/>
+                                    <rect x="25" y="165" width="150" height="24" rx="4" fill="#047857" stroke="#6ee7b7" stroke-width="1.5"/>
+                                    <text x="100" y="181" font-family="'MedievalSharp', cursive" font-size="11" fill="#ffffff" font-weight="bold" text-anchor="middle">SIR ROBIN</text>
+                                </svg>
+                            </div>
+
+                            <!-- HOVER OVERLAY FOR DRAG/DROP -->
+                            <div class="absolute inset-0 bg-emerald-950/80 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[10px] text-emerald-200 font-mono-tech transition-opacity p-1">
+                                <i class="fa-solid fa-cloud-arrow-up text-lg text-emerald-400 mb-1"></i>
+                                <span>CLICK / DROP PHOTO</span>
+                            </div>
+                        </div>
+
+                        <!-- HIDDEN FILE INPUT FOR ROBIN PHOTO -->
+                        <input type="file" id="robinFileInput" accept="image/*" class="hidden" onchange="handleImageSelect(event, 'robin')">
+
+                        <h2 class="text-xl font-robin text-emerald-400 tracking-wide leading-none">SIR ROBIN</h2>
+                        <p class="text-[10px] text-emerald-300 font-bold uppercase tracking-wider mt-0.5">Extreme Folk / Minstrel</p>
+
+                        <div class="mt-2 w-full space-y-1">
+                            <div class="flex justify-between text-[10px] font-mono-tech text-emerald-300/80">
+                                <span>BRAVERY LEVEL:</span>
+                                <span id="braveryMeterVal" class="font-bold text-emerald-400">0% (Cowardly)</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-emerald-900/50">
+                                <div id="braveryMeterBar" class="h-full bg-emerald-600 transition-all duration-300 w-0"></div>
+                            </div>
+                        </div>
+
+                        <div id="robinQuoteBox" class="mt-2 text-[10.5px] bg-emerald-950/80 border border-emerald-800/60 text-emerald-200 p-2 rounded-lg font-mono-tech leading-tight italic min-h-[42px] flex items-center justify-center w-full">
+                            "Bravely turned his tail and fled!"
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RIGHT WOOD SIDE PANEL -->
+            <div class="hidden lg:block w-7 wood-panel border-l border-amber-950/80 shrink-0"></div>
+        </div>
+
+        <!-- CONTROLS & BENCHMARKS -->
+        <div class="bg-slate-900 border-t border-slate-700/80 p-4 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+            
+            <!-- BENCHMARK PRESETS (7 COLS) -->
+            <div class="md:col-span-7 flex flex-col space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-200 tracking-wider uppercase font-mono-tech flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-amber-500"></i> Calibrated Anchor Benchmarks
+                    </span>
+                    <span class="text-[11px] text-amber-400/90 font-mono-tech">Scale: -90° to +90°</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <!-- THE DOORS: ROADHOUSE BLUES -->
+                    <button onclick="playPreset('roadhouse_blues')" class="flex flex-col items-start p-2.5 rounded-lg bg-red-950/50 border-2 border-red-600/80 hover:bg-red-900/70 text-left transition-all group active:scale-95 shadow-md">
+                        <span class="text-xs font-black text-red-400 group-hover:text-red-300 flex items-center gap-1.5 truncate w-full">
+                            <i class="fa-solid fa-hand-fist"></i> The Doors - Roadhouse
+                        </span>
+                        <span class="text-[10px] text-red-300/80 font-mono-tech truncate w-full">EXTREME LEFT (-90°) DALTON!</span>
+                    </button>
+
+                    <!-- GREENSLEEVES -->
+                    <button onclick="playPreset('greensleeves')" class="flex flex-col items-start p-2.5 rounded-lg bg-emerald-950/50 border-2 border-emerald-600/80 hover:bg-emerald-900/70 text-left transition-all group active:scale-95 shadow-md">
+                        <span class="text-xs font-black text-emerald-400 group-hover:text-emerald-300 flex items-center gap-1.5 truncate w-full">
+                            <i class="fa-solid fa-feather-pointed"></i> Greensleeves
+                        </span>
+                        <span class="text-[10px] text-emerald-300/80 font-mono-tech truncate w-full">EXTREME RIGHT (+90°) SIR ROBIN</span>
+                    </button>
+
+                    <!-- FAIRPORT CONVENTION -->
+                    <button onclick="playPreset('fairport')" class="flex flex-col items-start p-2.5 rounded-lg bg-emerald-950/50 border-2 border-emerald-500/80 hover:bg-emerald-900/70 text-left transition-all group active:scale-95 shadow-md">
+                        <span class="text-xs font-black text-emerald-400 group-hover:text-emerald-300 flex items-center gap-1.5 truncate w-full">
+                            <i class="fa-solid fa-guitar"></i> Fairport Convention
+                        </span>
+                        <span class="text-[10px] text-emerald-300/80 font-mono-tech truncate w-full">FOLK SIDE (+80°) Folk Rock</span>
+                    </button>
+
+                    <!-- LED ZEPPELIN -->
+                    <button onclick="playPreset('led_zeppelin')" class="flex flex-col items-start p-2.5 rounded-lg bg-sky-950/60 border-2 border-sky-500 hover:bg-sky-900/70 text-left transition-all group active:scale-95 shadow-md">
+                        <span class="text-xs font-black text-sky-400 group-hover:text-sky-300 flex items-center gap-1.5 truncate w-full">
+                            <i class="fa-solid fa-bolt"></i> Led Zeppelin
+                        </span>
+                        <span class="text-[10px] text-sky-300/80 font-mono-tech truncate w-full">STUCK IN MIDDLE (0°) Acoustic+Rock</span>
+                    </button>
+
+                    <!-- RADIOHEAD -->
+                    <button onclick="playPreset('radiohead')" class="flex flex-col items-start p-2.5 rounded-lg bg-sky-950/60 border-2 border-sky-500 hover:bg-sky-900/70 text-left transition-all group active:scale-95 shadow-md">
+                        <span class="text-xs font-black text-sky-400 group-hover:text-sky-300 flex items-center gap-1.5 truncate w-full">
+                            <i class="fa-solid fa-brain"></i> Radiohead
+                        </span>
+                        <span class="text-[10px] text-sky-300/80 font-mono-tech truncate w-full">STUCK IN MIDDLE (0°) Glitch Panic</span>
+                    </button>
+
+                    <!-- BECK: UNFORGIVEN -->
+                    <button onclick="playPreset('beck')" class="flex flex-col items-start p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-700/60 hover:bg-emerald-900/60 text-left transition-all group active:scale-95">
+                        <span class="text-xs font-bold text-emerald-400 group-hover:text-emerald-300 flex items-center gap-1.5 truncate w-full">
+                            <i class="fa-solid fa-music"></i> Beck - Unforgiven
+                        </span>
+                        <span class="text-[10px] text-emerald-300/70 font-mono-tech truncate w-full">FOLK SIDE (+65°) Slow Acoustic</span>
+                    </button>
+                </div>
+
+                <!-- ARTIST/SONG SEARCH INPUT -->
+                <div class="flex items-center space-x-2 pt-1">
+                    <div class="relative flex-1">
+                        <input type="text" id="songSearchInput" placeholder="Type artist (e.g. 'Fairport Convention', 'Beck', 'AC/DC', 'Radiohead')..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-500 font-mono-tech focus:outline-none focus:border-amber-500">
+                    </div>
+                    <button onclick="analyzeSearchedSong()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-xs rounded-lg font-mono-tech transition-colors shadow-md">
+                        ANALYZE
+                    </button>
+                </div>
+            </div>
+
+            <!-- AUDIO & MANUAL CONTROLS (5 COLS) -->
+            <div class="md:col-span-5 flex flex-col justify-between bg-slate-950/90 p-4 rounded-xl border border-slate-800 space-y-3">
+                <div class="text-xs font-bold text-slate-200 font-mono-tech uppercase flex items-center justify-between">
+                    <span><i class="fa-solid fa-microphone-lines text-amber-500"></i> WebAudio Analysis & Testing</span>
+                    <span class="text-[10px] text-amber-400 font-bold">Live API</span>
+                </div>
+
+                <!-- Microphone Analyzer -->
+                <button id="micBtn" onclick="toggleMicrophone()" class="w-full py-2 px-3 rounded-lg bg-indigo-950/50 border border-indigo-700 hover:bg-indigo-900/60 text-indigo-300 font-mono-tech text-xs font-bold flex items-center justify-between transition-all">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-microphone"></i> Live Microphone Analyzer</span>
+                    <span id="micSubtext" class="text-[10px] bg-indigo-900/80 px-2 py-0.5 rounded text-indigo-200">OFF</span>
+                </button>
+
+                <!-- Custom MP3 File Analyzer -->
+                <label class="w-full py-2 px-3 rounded-lg bg-purple-950/40 border border-purple-700 hover:bg-purple-900/60 text-purple-300 font-mono-tech text-xs font-bold flex items-center justify-between cursor-pointer transition-all">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-upload"></i> Upload Audio File (MP3/WAV)</span>
+                    <span id="uploadFileName" class="text-[10px] text-purple-400 truncate max-w-[120px]">Choose file</span>
+                    <input type="file" id="audioUpload" accept="audio/*" class="hidden" onchange="handleAudioFileUpload(event)">
+                </label>
+
+                <!-- Manual Slider -->
+                <div class="space-y-1 pt-1 border-t border-slate-800">
+                    <div class="flex justify-between text-[11px] font-mono-tech text-slate-400">
+                        <span>Manual Dial Override (-90° to +90°):</span>
+                        <span id="manualValue" class="text-amber-400 font-bold">CENTER (0°)</span>
+                    </div>
+                    <input type="range" id="manualSlider" min="-90" max="90" value="0" step="1" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500" oninput="overrideNeedlePosition(this.value)">
+                </div>
+
+                <!-- STOP BUTTON -->
+                <button onclick="stopAllAudio()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono-tech font-bold rounded border border-slate-600 flex items-center justify-center gap-2 transition-colors">
+                    <i class="fa-solid fa-stop text-red-400"></i> Reset Gauge & Stop Audio
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CORE SCRIPT ENGINE -->
+    <script>
+        // WebAudio and State Variables
+        let audioCtx = null;
+        let analyserNode = null;
+        let currentSourceNode = null;
+        let micStream = null;
+        let isMicActive = false;
+
+        let targetAngle = 0;
+        let currentAngle = 0;
+        let isManualOverride = false;
+        let isStuckInMiddle = false;
+
+        // Initialize WebAudio API
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Photo Upload & Drag and Drop Handler
+        function handleImageSelect(event, character) {
+            const file = event.target.files[0];
+            if (file) {
+                displayAvatarPhoto(file, character);
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function handleDragLeave(e, elementId) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function handleFileDrop(e, character) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                displayAvatarPhoto(e.dataTransfer.files[0], character);
+            }
+        }
+
+        function displayAvatarPhoto(file, character) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgElement = document.getElementById(character + '-photo');
+                const svgFallback = document.getElementById(character + 'SvgFallback');
+                
+                imgElement.src = e.target.result;
+                imgElement.classList.remove('hidden');
+                if (svgFallback) svgFallback.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Sound Synthesis Effects
+        function playSoundEffect(type) {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+
+            if (type === 'punch') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(30, now + 0.15);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'lute') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(587.33, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.08);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+        }
+
+        // Main Physics & UI Loop
+        function updateNeedlePhysics() {
+            if (!isManualOverride) {
+                const lerpFactor = 0.12;
+                let jitter = 0;
+                if (isStuckInMiddle || Math.abs(targetAngle) < 3) {
+                    jitter = (Math.random() - 0.5) * 7.5;
+                }
+                currentAngle += (targetAngle + jitter - currentAngle) * lerpFactor;
+            }
+
+            // Update Needle Rotation
+            const needle = document.getElementById('vuNeedle');
+            needle.style.transform = `rotate(${currentAngle}deg)`;
+
+            // Elements
+            const knoxCard = document.getElementById('knoxCard');
+            const robinCard = document.getElementById('robinCard');
+            const housing = document.getElementById('vuMeterHousing');
+            const stuckBanner = document.getElementById('stuckGlitchBanner');
+            const pivotDot = document.getElementById('pivotDot');
+            
+            const brawlBar = document.getElementById('brawlMeterBar');
+            const brawlVal = document.getElementById('brawlMeterVal');
+            const braveryBar = document.getElementById('braveryMeterBar');
+            const braveryVal = document.getElementById('braveryMeterVal');
+
+            // Dynamic Styling based on Angle
+            if (currentAngle < -15) {
+                // LEFT SIDE: DALTON!
+                isStuckInMiddle = false;
+                const ratio = Math.min(1, Math.abs(currentAngle + 15) / 75);
+                
+                knoxCard.style.borderColor = `rgba(239, 68, 68, ${0.5 + ratio * 0.5})`;
+                knoxCard.style.boxShadow = `0 0 ${15 + ratio * 25}px rgba(239, 68, 68, ${0.4 + ratio * 0.5})`;
+                robinCard.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                robinCard.style.boxShadow = 'none';
+
+                housing.classList.remove('vu-stuck-glitch');
+                stuckBanner.classList.add('hidden');
+                pivotDot.className = "w-4 h-4 rounded-full bg-red-600 shadow-[0_0_12px_rgba(239,68,68,0.9)]";
+
+                const brawlPct = Math.round(50 + ratio * 50);
+                brawlBar.style.width = `${brawlPct}%`;
+                brawlVal.textContent = `${brawlPct}%`;
+                braveryBar.style.width = `0%`;
+                braveryVal.textContent = `0% (Fled)`;
+
+            } else if (currentAngle > 15) {
+                // RIGHT SIDE: SIR ROBIN
+                isStuckInMiddle = false;
+                const ratio = Math.min(1, (currentAngle - 15) / 75);
+
+                robinCard.style.borderColor = `rgba(16, 185, 129, ${0.5 + ratio * 0.5})`;
+                robinCard.style.boxShadow = `0 0 ${15 + ratio * 25}px rgba(16, 185, 129, ${0.4 + ratio * 0.5})`;
+                knoxCard.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                knoxCard.style.boxShadow = 'none';
+
+                housing.classList.remove('vu-stuck-glitch');
+                stuckBanner.classList.add('hidden');
+                pivotDot.className = "w-4 h-4 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.9)]";
+
+                brawlBar.style.width = `0%`;
+                brawlVal.textContent = `0%`;
+                const braveryPct = Math.round(ratio * 15);
+                braveryBar.style.width = `${braveryPct}%`;
+                braveryVal.textContent = `${braveryPct}% (Running Away)`;
+
+            } else {
+                // EXACT CENTER: STUCK IN MIDDLE
+                isStuckInMiddle = true;
+                knoxCard.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                robinCard.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                knoxCard.style.boxShadow = 'none';
+                robinCard.style.boxShadow = 'none';
+
+                housing.classList.add('vu-stuck-glitch');
+                stuckBanner.classList.remove('hidden');
+                pivotDot.className = "w-4 h-4 rounded-full bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.9)]";
+
+                brawlBar.style.width = `50%`;
+                brawlVal.textContent = `50%`;
+                braveryBar.style.width = `50%`;
+                braveryVal.textContent = `50% (Paralyzed)`;
+            }
+
+            requestAnimationFrame(updateNeedlePhysics);
+        }
+
+        requestAnimationFrame(updateNeedlePhysics);
+
+        // Manual Override
+        function overrideNeedlePosition(val) {
+            isManualOverride = true;
+            currentAngle = parseFloat(val);
+            let label = "CENTER (0°)";
+            if (currentAngle < -20) label = `DALTON! (${Math.round(currentAngle)}°)`;
+            else if (currentAngle > 20) label = `SIR ROBIN (${Math.round(currentAngle)}°)`;
+            document.getElementById('manualValue').textContent = label;
+            updateTicker(`Manual Override: ${label}`);
+        }
+
+        // Preset Song Selector
+        function playPreset(type) {
+            initAudioContext();
+            stopAllAudio();
+            isManualOverride = false;
+            const now = audioCtx.currentTime;
+
+            if (type === 'roadhouse_blues') {
+                targetAngle = -85;
+                isStuckInMiddle = false;
+                playSoundEffect('punch');
+                updateTicker("The Doors - 'Roadhouse Blues' ➔ FULL DALTON! (-85°)");
+                updateQuotes("KNOX", "DALTON! 'KEEP YOUR EYES ON THE ROAD, YOUR HANDS UPON THE WHEEL!'");
+            } else if (type === 'greensleeves') {
+                targetAngle = 85;
+                isStuckInMiddle = false;
+                playSoundEffect('lute');
+                updateTicker("'Greensleeves' ➔ FULL SIR ROBIN / MINSTREL FOLK! (+85°)");
+                updateQuotes("ROBIN", "Alas, my love! Sir Robin flees gently to Greensleeves!");
+            } else if (type === 'fairport') {
+                targetAngle = 80;
+                isStuckInMiddle = false;
+                playSoundEffect('lute');
+                updateTicker("Fairport Convention ('Matty Groves') ➔ SIR ROBIN FOLK ROCK (+80°)");
+                updateQuotes("ROBIN", "Fairport Convention brings gentle folk song craft for Sir Robin's escape!");
+            } else if (type === 'led_zeppelin') {
+                targetAngle = 0;
+                isStuckInMiddle = true;
+                updateTicker("Led Zeppelin ('Stairway' / 'Ramble On') ➔ STUCK IN THE MIDDLE! (0°)");
+                updateQuotes("MIDDLE", "Zeppelin spans both acoustic folk & heavy blues rock! Needle locked!");
+            } else if (type === 'radiohead') {
+                targetAngle = 0;
+                isStuckInMiddle = true;
+                updateTicker("Radiohead ('Paranoid Android') ➔ STUCK IN THE MIDDLE GLITCH! (0°)");
+                updateQuotes("MIDDLE", "Radiohead's art-rock existential dread freezes the meter!");
+            } else if (type === 'beck') {
+                targetAngle = 65;
+                isStuckInMiddle = false;
+                playSoundEffect('lute');
+                updateTicker("Beck ('Unforgiven' / 'Lost Cause') ➔ SIR ROBIN FOLK SIDE (+65°)");
+                updateQuotes("ROBIN", "Beck's melancholic acoustic guitar comforts Sir Robin!");
+            }
+        }
+
+        // Song & Artist Search Analyzer
+        function analyzeSearchedSong() {
+            const query = document.getElementById('songSearchInput').value.trim().toLowerCase();
+            if (!query) return;
+
+            isManualOverride = false;
+
+            if (query.includes('fairport') || query.includes('pentangle') || query.includes('steeleye') || query.includes('dylan') || query.includes('beck') || query.includes('unforgiven') || query.includes('greensleeves') || query.includes('folk') || query.includes('acoustic') || query.includes('nick drake') || query.includes('bert jansch')) {
+                targetAngle = 80;
+                isStuckInMiddle = false;
+                playSoundEffect('lute');
+                updateTicker(`SEARCH MATCH: "${query.toUpperCase()}" ➔ SIR ROBIN FOLK SIDE (+80°)`);
+                updateQuotes("ROBIN", `Sir Robin approves! ${query.toUpperCase()} is gentle acoustic folk!`);
+            } else if (query.includes('zeppelin') || query.includes('radiohead') || query.includes('stairway') || query.includes('paranoid') || query.includes('pink floyd')) {
+                targetAngle = 0;
+                isStuckInMiddle = true;
+                updateTicker(`SEARCH MATCH: "${query.toUpperCase()}" ➔ STUCK IN THE MIDDLE!`);
+                updateQuotes("MIDDLE", `Needle stuck in the middle! ${query} touches both spectrums!`);
+            } else if (query.includes('doors') || query.includes('roadhouse') || query.includes('ac/dc') || query.includes('muddy') || query.includes('rock') || query.includes('blues') || query.includes('knox') || query.includes('dalton')) {
+                targetAngle = -85;
+                isStuckInMiddle = false;
+                playSoundEffect('punch');
+                updateTicker(`SEARCH MATCH: "${query.toUpperCase()}" ➔ DALTON! BRAWL BLUES SIDE (-85°)`);
+                updateQuotes("KNOX", `DALTON! ${query.toUpperCase()} IS READY FOR A BAR FIGHT!`);
+            } else {
+                targetAngle = 45;
+                isStuckInMiddle = false;
+                updateTicker(`SEARCH: "${query}" analyzed as moderate acoustic track.`);
+            }
+        }
+
+        // Upload Audio File
+        function handleAudioFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            initAudioContext();
+            stopAllAudio();
+            isManualOverride = false;
+
+            document.getElementById('uploadFileName').textContent = file.name;
+            updateTicker(`Analyzing audio: ${file.name}`);
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                audioCtx.decodeAudioData(e.target.result, function(buffer) {
+                    const source = audioCtx.createBufferSource();
+                    source.buffer = buffer;
+                    analyserNode = audioCtx.createAnalyser();
+                    analyserNode.fftSize = 512;
+                    source.connect(analyserNode);
+                    analyserNode.connect(audioCtx.destination);
+                    source.start(0);
+                    currentSourceNode = source;
+                    analyzeFrequencySpectrum();
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Live Microphone
+        async function toggleMicrophone() {
+            initAudioContext();
+            if (isMicActive) {
+                stopAllAudio();
+                return;
+            }
+
+            try {
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                const micSource = audioCtx.createMediaStreamSource(micStream);
+                analyserNode = audioCtx.createAnalyser();
+                analyserNode.fftSize = 512;
+                micSource.connect(analyserNode);
+
+                isMicActive = true;
+                isManualOverride = false;
+
+                document.getElementById('micBtn').classList.add('bg-indigo-600', 'border-indigo-400');
+                document.getElementById('micSubtext').textContent = "LIVE ON";
+                updateTicker("Microphone Active! Listening...");
+
+                analyzeFrequencySpectrum();
+            } catch (err) {
+                updateTicker("Microphone unavailable.");
+            }
+        }
+
+        // Frequency Spectrum Analysis
+        function analyzeFrequencySpectrum() {
+            if (!analyserNode) return;
+            const bufferLength = analyserNode.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            function analyzeFrame() {
+                if (!analyserNode || isManualOverride) return;
+                analyserNode.getByteFrequencyData(dataArray);
+
+                let lowBass = 0, midRange = 0, highTreble = 0;
+                for (let i = 0; i < bufferLength; i++) {
+                    if (i < 12) lowBass += dataArray[i];
+                    else if (i < 90) midRange += dataArray[i];
+                    else highTreble += dataArray[i];
+                }
+
+                lowBass /= 12;
+                midRange /= 78;
+                highTreble /= (bufferLength - 90);
+
+                const volume = (lowBass + midRange + highTreble) / 3;
+
+                if (volume > 8) {
+                    const folkVsRockScore = (highTreble * 1.8 + midRange * 0.8) - (lowBass * 1.6);
+                    const rangeSpread = Math.abs(lowBass - highTreble);
+
+                    if (rangeSpread < 15 && lowBass > 45 && highTreble > 45) {
+                        targetAngle = 0;
+                        isStuckInMiddle = true;
+                        updateQuotes("MIDDLE", "Wide spectrum! Stuck in the middle!");
+                    } else if (folkVsRockScore > 12) {
+                        targetAngle = Math.min(85, 25 + folkVsRockScore * 1.2);
+                        isStuckInMiddle = false;
+                        updateQuotes("ROBIN", "High acoustic treble! Sir Robin Folk Zone!");
+                    } else if (folkVsRockScore < -12) {
+                        targetAngle = Math.max(-85, -25 + folkVsRockScore * 1.2);
+                        isStuckInMiddle = false;
+                        updateQuotes("KNOX", "DALTON! HEAVY BASS overdrive detected!");
+                    } else {
+                        targetAngle = 0;
+                        isStuckInMiddle = true;
+                    }
+                }
+
+                if (analyserNode || isMicActive) {
+                    requestAnimationFrame(analyzeFrame);
+                }
+            }
+
+            analyzeFrame();
+        }
+
+        // Helper Functions
+        function updateQuotes(character, msg) {
+            if (character === "KNOX") {
+                document.getElementById('knoxQuoteBox').textContent = `"${msg}"`;
+            } else if (character === "ROBIN") {
+                document.getElementById('robinQuoteBox').textContent = `"${msg}"`;
+            } else if (character === "MIDDLE") {
+                document.getElementById('knoxQuoteBox').textContent = `"DALTON! WHAT IS THIS MUSIC?!"`;
+                document.getElementById('robinQuoteBox').textContent = `"Bravely confused in the middle!"`;
+            }
+        }
+
+        function updateTicker(msg) {
+            document.getElementById('tickerText').textContent = msg;
+        }
+
+        function stopAllAudio() {
+            if (currentSourceNode) {
+                try { currentSourceNode.stop(); } catch(e){}
+                currentSourceNode = null;
+            }
+            if (micStream) {
+                micStream.getTracks().forEach(track => track.stop());
+                micStream = null;
+            }
+
+            isMicActive = false;
+            isManualOverride = false;
+            isStuckInMiddle = false;
+            analyserNode = null;
+
+            document.getElementById('micBtn').classList.remove('bg-indigo-600', 'border-indigo-400');
+            document.getElementById('micSubtext').textContent = "OFF";
+            document.getElementById('uploadFileName').textContent = "Choose file";
+
+            targetAngle = 0;
+            updateTicker("Audio stopped. Gauge reset to center.");
+            updateQuotes("KNOX", "DALTON! I'VE GOT A TIP FOR YA!");
+            updateQuotes("ROBIN", "Bravely turned his tail and fled!");
+        }
+    </script>
+</body>
+</html>
